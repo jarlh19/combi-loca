@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Combi Loca · Sube pasajeros, no choques</title>
+  <meta name="description" content="Maneja una combi por Lima: esquiva buses, mototaxis y huecos, ciérrate en los paraderos y recauda. Ranking en vivo. Hecho para #HackTheAndes.">
+  <meta name="theme-color" content="#140f1f">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Combi Loca">
+  <meta property="og:title" content="Combi Loca · ¿Cuánto recaudas antes de chocar?">
+  <meta property="og:description" content="Maneja la combi por Lima, sube pasajeros y no choques. Ranking en vivo de los mejores cobradores.">
+  <meta property="og:url" content="https://combi-loca.pages.dev/">
+  <meta property="og:image" content="https://combi-loca.pages.dev/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Una combi amarilla esquivando un bus y un mototaxi con el texto Combi Loca">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="css/estilos.css">
+  <script type="module" src="js/juego.js"></script>
+</head>
+<body>
+  <div class="app" id="app">
+    <canvas id="lienzo" aria-hidden="true"></canvas>
+
+    <div class="hud" id="hud" hidden>
+      <div class="hud-izq">
+        <span class="hud-plata" id="hud-plata">S/ 0.00</span>
+        <span class="hud-pas" id="hud-pas">0 pasajeros</span>
+      </div>
+      <div class="hud-centro">
+        <span class="chapa chapa-combo" id="hud-combo" hidden></span>
+        <span class="chapa chapa-turbo" id="hud-turbo" hidden>Corredor</span>
+      </div>
+      <div class="hud-der">
+        <span class="vidas" id="hud-vidas"></span>
+        <button class="hud-btn" id="btn-pausa" type="button" aria-label="Pausa">❚❚</button>
+      </div>
+    </div>
+
+    <section class="pantalla" id="pantalla-inicio" aria-labelledby="titulo">
+      <h1 class="logo" id="titulo"><span class="l1">Combi</span><span class="l2">Loca</span></h1>
+      <p class="lema">Sube pasajeros. No choques. Recauda.</p>
+      <button class="btn btn-grande" id="btn-arrancar" type="button">¡Arranca!</button>
+      <ul class="como">
+        <li><b>◀ ▶</b><span>Toca un lado de la pantalla para cambiar de carril. En la compu, las flechas.</span></li>
+        <li><b class="p">P</b><span>En los paraderos ciérrate al carril derecho: cada pasajero paga, y si no fallas, el combo sube a x3.</span></li>
+        <li><b class="x">!</b><span>Esquiva buses, mototaxis, huecos y conos. Tres papeletas y al depósito.</span></li>
+      </ul>
+      <p class="record" id="record" hidden></p>
+      <section class="ranking" aria-labelledby="top-inicio-titulo">
+        <h2 id="top-inicio-titulo">Top cobradores</h2>
+        <ol class="top" id="top-inicio"></ol>
+        <p class="vacio" id="top-inicio-vacio" hidden></p>
+      </section>
+      <p class="pie">
+        <button class="link" id="btn-sonido" type="button">Sonido: sí</button>
+        <span>·</span>
+        <span>Hecho por Jorge Laban para <strong>#HackTheAndes</strong></span>
+      </p>
+    </section>
+
+    <section class="pantalla pantalla-pausa" id="pantalla-pausa" hidden aria-labelledby="pausa-titulo">
+      <h2 class="grande" id="pausa-titulo">Pausa</h2>
+      <p class="lema">El cobrador se fue a comprar su emoliente.</p>
+      <button class="btn btn-grande" id="btn-seguir" type="button">Seguir</button>
+      <button class="btn btn-sec" id="btn-salir" type="button">Bajarse</button>
+    </section>
+
+    <section class="pantalla" id="pantalla-fin" hidden aria-labelledby="fin-titulo">
+      <p class="fin-titulo" id="fin-titulo"></p>
+      <p class="fin-plata" id="fin-plata"></p>
+      <p class="fin-datos" id="fin-datos"></p>
+      <p class="nuevo" id="fin-nuevo" hidden>¡Nuevo récord!</p>
+      <form class="form-ranking" id="form-ranking" hidden novalidate>
+        <label for="in-nombre">Tu nombre para el ranking</label>
+        <div class="fila">
+          <input id="in-nombre" maxlength="16" autocomplete="nickname" spellcheck="false" placeholder="Ej.: Chofer Jorge">
+          <button class="btn" type="submit" id="btn-guardar">Guardar</button>
+        </div>
+      </form>
+      <p class="aviso" id="ranking-aviso" aria-live="polite"></p>
+      <div class="acciones">
+        <button class="btn btn-grande" id="btn-otra" type="button">Otra vuelta</button>
+        <button class="btn btn-sec" id="btn-compartir" type="button">Compartir</button>
+      </div>
+      <p class="aviso" id="compartir-aviso" aria-live="polite"></p>
+      <textarea class="compartir-texto" id="compartir-texto" rows="4" readonly hidden aria-label="Texto para compartir"></textarea>
+      <section class="ranking" aria-labelledby="top-fin-titulo">
+        <h2 id="top-fin-titulo">Top cobradores</h2>
+        <ol class="top" id="top-fin"></ol>
+        <p class="vacio" id="top-fin-vacio" hidden></p>
+      </section>
+    </section>
+  </div>
+</body>
+</html>

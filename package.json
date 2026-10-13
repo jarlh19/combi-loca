@@ -1,0 +1,18 @@
+{
+  "name": "combi-loca",
+  "private": true,
+  "type": "module",
+  "description": "Maneja la combi por Lima, sube pasajeros y no choques. Hecho para Hack the Andes.",
+  "scripts": {
+    "dev": "wrangler pages dev --port 5197 --ip 127.0.0.1",
+    "test": "node --test test/*.test.mjs",
+    "check": "node --check public/js/motor.js && node --check public/js/dibujo.js && node --check public/js/sonido.js && node --check public/js/juego.js && node --check lib/ranking.js && node --check functions/api/puntajes.js && node --check functions/api/partida.js",
+    "db:local": "wrangler d1 execute combi-loca --local --file schema.sql",
+    "db:remoto": "wrangler d1 execute combi-loca --remote --file schema.sql",
+    "deploy": "wrangler pages deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.136.0"
+  },
+  "license": "MIT"
+}
