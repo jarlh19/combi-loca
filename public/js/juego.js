@@ -1,7 +1,7 @@
 // Combi Loca: pantallas, control, ciclo de juego y ranking.
 import { nuevaPartida, avanzar, mover, aleatorio, soles, ANCHO, VIDAS, V0, VMAX } from './motor.js';
 import { crearEfectos, registrar, avanzarEfectos, dibujar } from './dibujo.js';
-import { activar, silenciar, sonar, musicaInicio, musicaRapidez, musicaFin } from './sonido.js';
+import { activar, silenciar, sonar, musicaInicio, musicaRitmo, musicaFin, RADIOS, nombreRadio } from './sonido.js';
 
 const SITIO = 'https://combi-loca.pages.dev';
 const $ = (id) => document.getElementById(id);
@@ -29,6 +29,7 @@ let ultimo = 0;
 let demo = null;
 let azarDemo = null;
 let enPista = false; // la partida se ve detrás de la pausa y del final
+let radio = RADIOS.includes(guardado.get('radio')) ? guardado.get('radio') : 'techno';
 
 // ---------- tamaño ----------
 
@@ -62,7 +63,8 @@ function mostrar(id) {
 function arrancar() {
   activar();
   sonar.bocina();
-  musicaInicio();
+  musicaFin();
+  musicaInicio(radio);
   partida = nuevaPartida(alto);
   azar = aleatorio((Math.random() * 2 ** 31) >>> 0);
   fx = crearEfectos();
@@ -86,7 +88,7 @@ function seguir() {
   if (!jugando) return;
   pausado = false;
   activar();
-  musicaInicio();
+  musicaInicio(radio);
   mostrar(null);
   ultimo = performance.now();
 }
@@ -180,7 +182,8 @@ function ciclo(t) {
     registrar(fx, eventos);
     sonidos(eventos);
     pintarHud();
-    musicaRapidez(1 + ((partida.velocidad - V0) / (VMAX - V0)) * 0.35);
+    const intensidad = Math.min(1, Math.max(0, (partida.velocidad - V0) / (VMAX - V0)));
+    musicaRitmo(1 + intensidad * 0.15, intensidad);
     if (partida.terminado) terminar();
   } else if (!enPista && demo) {
     avanzar(demo, dt, azarDemo);
@@ -225,6 +228,24 @@ $('btn-pausa').addEventListener('click', pausar);
 $('btn-seguir').addEventListener('click', seguir);
 $('btn-salir').addEventListener('click', bajarse);
 $('btn-compartir').addEventListener('click', compartir);
+function pintarRadio() {
+  $('radio-nombre').textContent = nombreRadio(radio);
+  $('btn-radio-hud').setAttribute('aria-label', `Radio: ${nombreRadio(radio)}. Toca para cambiar`);
+  $('btn-radio-hud').title = nombreRadio(radio);
+}
+
+// Cambia de estación; en el inicio sirve de muestra.
+function cambiarRadio() {
+  radio = RADIOS[(RADIOS.indexOf(radio) + 1) % RADIOS.length];
+  guardado.set('radio', radio);
+  pintarRadio();
+  activar();
+  musicaFin();
+  if (!pausado) musicaInicio(radio);
+}
+$('btn-radio').addEventListener('click', cambiarRadio);
+$('btn-radio-hud').addEventListener('click', cambiarRadio);
+
 $('btn-sonido').addEventListener('click', () => {
   const callado = !guardado.get('silencio');
   guardado.set('silencio', callado);
@@ -346,6 +367,7 @@ async function iniciar() {
   const callado = !!guardado.get('silencio');
   silenciar(callado);
   $('btn-sonido').textContent = `Sonido: ${callado ? 'no' : 'sí'}`;
+  pintarRadio();
   pintarRecord();
   try { await document.fonts.load("20px 'Bungee'"); } catch { /* el dibujo usa la de respaldo */ }
   medir();

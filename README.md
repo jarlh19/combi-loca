@@ -64,7 +64,7 @@ npm run deploy
 
 - `public/js/motor.js`: las reglas de la pista. No dibuja nada, por eso las pruebas pueden jugar solas.
 - `public/js/dibujo.js`: el canvas y los efectos.
-- `public/js/sonido.js`: sonidos y la cumbia de fondo, con Web Audio y sin archivos.
+- `public/js/sonido.js`: sonidos y la radio (techno noventero, reggaetón y cumbia), sintetizados con Web Audio. La música es original: sin samples ni melodías de canciones existentes.
 - `public/js/juego.js`: pantallas, control y ranking.
 - `functions/api/`: `partida` (ficha) y `puntajes` (ranking).
 - `lib/ranking.js`: fichas firmadas y reglas para aceptar un puntaje.
