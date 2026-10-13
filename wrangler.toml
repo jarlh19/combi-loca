@@ -2,8 +2,7 @@ name = "combi-loca"
 pages_build_output_dir = "./public"
 compatibility_date = "2026-09-01"
 
-# La base se crea con `npx wrangler d1 create combi-loca`; después va aquí su id.
 [[d1_databases]]
 binding = "DB"
 database_name = "combi-loca"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "3bc09aa0-833d-436d-b788-7b5086655a8a"
