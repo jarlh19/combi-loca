@@ -13,9 +13,9 @@ export const centroCarril = (c) => VEREDA_IZQ + ANCHO_CARRIL * (c + 0.5);
 
 export const COMBI = { w: 44, h: 84 };
 export const VIDAS = 3;
-export const V0 = 250;
-export const ACEL = 6;
-export const VMAX = 680;
+export const V0 = 380;
+export const ACEL = 8;
+export const VMAX = 820;
 export const TURBO_S = 4;
 export const TURBO_X = 1.45;
 export const INVULNERABLE_S = 1.4;
@@ -79,7 +79,7 @@ export function mover(e, dir) {
   e.carril = Math.max(0, Math.min(CARRILES - 1, e.carril + dir));
 }
 
-export const dificultad = (t) => Math.min(1, t / 90);
+export const dificultad = (t) => Math.min(1, t / 60);
 
 // ---------- filas ----------
 
@@ -100,7 +100,7 @@ const vecinos = (libres, alcanzables) => libres.filter((c) => alcanzables.some((
 export function planearFila(e, azar) {
   const d = dificultad(e.t);
   const conParadero = e.filasHastaParadero <= 0;
-  let bloqueados = e.t < 5 ? 1 : azar() < 0.2 + 0.5 * d ? 2 : 1;
+  let bloqueados = e.t < 2 ? 1 : azar() < 0.35 + 0.45 * d ? 2 : 1;
   let opciones = [];
   while (bloqueados >= 0) {
     opciones = subconjuntos(bloqueados).filter((b) => {
@@ -120,7 +120,7 @@ export function planearFila(e, azar) {
 // 0.3 s entre el fin de esta fila y el comienzo de la siguiente para cambiar de carril.
 export const REACCION_S = 0.3;
 export function separacion(e, altoFila) {
-  const base = 430 - 200 * dificultad(e.t);
+  const base = 380 - 180 * dificultad(e.t);
   const holgura = (altoFila + TIPOS.bus.h) / 2 + COMBI.h + e.velocidad * REACCION_S;
   return Math.max(base, holgura);
 }
@@ -197,7 +197,7 @@ export function avanzar(e, dt, azar) {
     if (o.fuera || !choca(combi, o, 5)) continue;
     o.fuera = true;
     if (o.tipo === 'moneda') {
-      const monto = e.t > 45 ? 20 : 10;
+      const monto = e.t > 30 ? 20 : 10;
       e.recaudado += monto;
       eventos.push({ tipo: 'moneda', monto, x: o.x, y: o.y });
     } else if (o.tipo === 'turbo') {
