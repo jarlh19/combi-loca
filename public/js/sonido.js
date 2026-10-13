@@ -1,5 +1,5 @@
 // Combi Loca: sonidos y radio, todo sintetizado con Web Audio (sin archivos ni samples).
-// La música es original: géneros y ritmos de uso común (techno noventero, reggaetón, cumbia),
+// La música es original: géneros y ritmos de uso común (tecno, reggaetón, cumbia, salsa, rock),
 // con melodías propias. El navegador solo deja sonar después de un toque: todo empieza en activar().
 
 let ac = null;
@@ -132,6 +132,82 @@ const marimba = (n, t, vol = 0.14) => {
   tono(midi(n + 12), t, 0.12, { tipo: 'sine', vol: vol * 0.4, destino: busMusica, ataque: 0.002 });
 };
 
+// Salsa
+const clave = (t) => {
+  tono(2400, t, 0.05, { tipo: 'sine', vol: 0.12, destino: busMusica, ataque: 0.001 });
+  tono(1800, t, 0.03, { tipo: 'triangle', vol: 0.05, destino: busMusica, ataque: 0.001 });
+};
+const campana = (t, vol) => {
+  tono(800, t, 0.12, { tipo: 'square', vol, destino: busMusica, ataque: 0.001 });
+  tono(540, t, 0.12, { tipo: 'square', vol: vol * 0.6, destino: busMusica, ataque: 0.001 });
+};
+const tumbadora = (t, golpe) => {
+  if (golpe === 'tapado') ruido(t, 0.06, { vol: 0.18, filtro: 1200, q: 2, destino: busMusica });
+  else tono(golpe === 'grave' ? 196 : 247, t, 0.22, { tipo: 'sine', vol: 0.22, hasta: golpe === 'grave' ? 180 : 230, destino: busMusica, ataque: 0.002 });
+};
+const piano = (notas, t, dur) => {
+  for (const n of notas) {
+    tono(midi(n), t, dur, { tipo: 'triangle', vol: 0.06, destino: busMusica, ataque: 0.002 });
+    tono(midi(n + 12), t, 0.12, { tipo: 'sine', vol: 0.02, destino: busMusica, ataque: 0.002 });
+  }
+};
+function metales(n, t, dur, x) {
+  if (!ac) return;
+  const f = ac.createBiquadFilter();
+  f.type = 'lowpass';
+  f.frequency.setValueAtTime(900 + x * 1200, t);
+  f.frequency.linearRampToValueAtTime(2600 + x * 1200, t + 0.04);
+  f.frequency.exponentialRampToValueAtTime(1000, t + dur);
+  const g = ac.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(0.07, t + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  f.connect(g).connect(busMusica);
+  for (const [nota, d] of [[n, -6], [n, 6], [n - 12, 0]]) {
+    const o = ac.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.value = midi(nota);
+    o.detune.value = d;
+    o.connect(f);
+    o.start(t);
+    o.stop(t + dur + 0.02);
+  }
+}
+
+// Rock: un solo distorsionador compartido, como un amplificador.
+let amplificador = null;
+function distorsion() {
+  if (amplificador) return amplificador;
+  const curva = new Float32Array(1024);
+  for (let i = 0; i < curva.length; i++) curva[i] = Math.tanh(6 * ((i / (curva.length - 1)) * 2 - 1));
+  const formador = ac.createWaveShaper();
+  formador.curve = curva;
+  formador.oversample = '4x';
+  const filtro = ac.createBiquadFilter();
+  filtro.type = 'lowpass';
+  filtro.frequency.value = 3200;
+  const salida = ac.createGain();
+  salida.gain.value = 0.13;
+  formador.connect(filtro).connect(salida).connect(busMusica);
+  amplificador = formador;
+  return amplificador;
+}
+function guitarra(notas, t, dur, vol) {
+  if (!ac) return;
+  const g = ac.createGain();
+  g.gain.setValueAtTime(vol, t);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  g.connect(distorsion());
+  for (const n of notas) {
+    const o = ac.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.value = midi(n);
+    o.connect(g);
+    o.start(t);
+    o.stop(t + dur + 0.02);
+  }
+}
+
 // ---------- efectos del juego ----------
 
 const ahora = () => (ac ? ac.currentTime : 0);
@@ -179,9 +255,31 @@ const MARIMBA = [
   [74, 0, 71, 0, 67, 0, 71, 0, 74, 0, 0, 0, 76, 0, 74, 0],
 ];
 
+// Salsa en la menor (la m, re m, mi7, la m). Cada "compás" de 16 pasos son dos compases reales en corcheas:
+// así cabe una vuelta entera de la clave 3-2.
+const SALSA_ACORDES = [[57, 60, 64], [62, 65, 69], [56, 59, 62, 64], [57, 60, 64]];
+const SALSA_RAIZ = [45, 50, 40, 45];
+const CLAVE = [0, 3, 6, 10, 12];
+const MONTUNO = [0, 1, 3, 4, 6, 7, 9, 10, 12, 13, 15];
+const METALES = [
+  [76, 0, 0, 76, 0, 0, 77, 0, 0, 0, 76, 0, 74, 0, 0, 0],
+  [74, 0, 0, 74, 0, 0, 76, 0, 0, 0, 74, 0, 72, 0, 0, 0],
+  [71, 0, 0, 71, 0, 0, 74, 0, 0, 0, 71, 0, 68, 0, 0, 0],
+  [72, 0, 0, 0, 0, 0, 69, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+];
+
+// Rock en mi menor (mi, do, sol, re) con un solo propio en pentatónica.
+const ROCK_RAIZ = [40, 36, 43, 38];
+const SOLO = [
+  [76, 0, 0, 79, 0, 0, 81, 0, 79, 0, 76, 0, 74, 0, 76, 0],
+  [72, 0, 0, 76, 0, 0, 79, 0, 76, 0, 72, 0, 71, 0, 72, 0],
+  [79, 0, 0, 81, 0, 0, 83, 0, 81, 0, 79, 0, 76, 0, 79, 0],
+  [74, 0, 0, 78, 0, 0, 81, 0, 78, 0, 74, 0, 76, 0, 0, 0],
+];
+
 const ESTACIONES = {
   techno: {
-    nombre: 'Techno 90',
+    nombre: 'Tecno',
     bpm: 136,
     tocar(compas, pos, t, paso, x) {
       const c = compas % 4;
@@ -248,9 +346,58 @@ const ESTACIONES = {
       }
     },
   },
+  salsa: {
+    nombre: 'Salsa',
+    bpm: 96,
+    tocar(compas, pos, t, paso, x) {
+      const c = compas % 4;
+      const acorde = SALSA_ACORDES[c];
+      if (CLAVE.includes(pos)) clave(t);
+      if (pos % 2 === 0) campana(t, pos % 4 === 0 ? 0.05 : 0.03);
+      if (pos === 2 || pos === 10) tumbadora(t, 'tapado');
+      if ([6, 7, 14, 15].includes(pos)) tumbadora(t, pos % 2 ? 'agudo' : 'grave');
+      // tumbao: el bajo cae en el 2 "y" y en el 4, y el último anticipa el acorde que viene
+      const bajoSalsa = (n, dur) => tono(midi(n), t, dur, { tipo: 'triangle', vol: 0.24, destino: busMusica });
+      if (pos === 3 || pos === 11) bajoSalsa(SALSA_RAIZ[c] + 7, paso * 2.6);
+      if (pos === 6) bajoSalsa(SALSA_RAIZ[c], paso * 4);
+      if (pos === 14) bajoSalsa(SALSA_RAIZ[(c + 1) % 4], paso * 4);
+      if (compas >= 1 && MONTUNO.includes(pos)) {
+        const i = MONTUNO.indexOf(pos);
+        piano(i % 2 === 0 ? [acorde[0] + 12] : acorde.slice(1), t, paso * 1.3);
+      }
+      // el mambo de metales entra cada cuatro vueltas y descansa las siguientes cuatro
+      if (compas >= 4 && Math.floor(compas / 4) % 2 === 1) {
+        const n = METALES[c][pos];
+        if (n) metales(n, t, paso * 1.6, x);
+      }
+      if (x > 0.5 && pos % 2 === 1) ruido(t, 0.05, { vol: 0.04, filtro: 6000, tipo: 'highpass', destino: busMusica });
+    },
+  },
+  rock: {
+    nombre: 'Rock',
+    bpm: 148,
+    tocar(compas, pos, t, paso, x) {
+      const c = compas % 4;
+      const raiz = ROCK_RAIZ[c];
+      if (pos === 0 || pos === 8 || pos === 10) bombo(t, 0.9);
+      if (compas % 8 === 7 && pos >= 12) caja(t, 0.25 + (pos - 12) * 0.07);
+      else if (pos === 4 || pos === 12) caja(t, 0.45);
+      if (pos % 2 === 0) platillo(t, false, 0.07 + x * 0.03);
+      if (pos === 0 && compas % 4 === 0) ruido(t, 0.9, { vol: 0.1, filtro: 6000, tipo: 'highpass', destino: busMusica });
+      if (pos % 2 === 0) bajo(midi(raiz), t, paso * 1.8, { tipo: 'square', vol: 0.16, corte: 300 + x * 600 });
+      if (compas >= 1 && pos % 2 === 0) {
+        const acento = [0, 6, 10].includes(pos);
+        guitarra([raiz + 12, raiz + 19, raiz + 24], t, acento ? paso * 3 : paso * 0.9, acento ? 0.6 : 0.3);
+      }
+      if (compas >= 8 && Math.floor(compas / 4) % 2 === 0) {
+        const n = SOLO[c][pos];
+        if (n) guitarra([n], t, paso * 2.4, 0.5);
+      }
+    },
+  },
 };
 
-export const RADIOS = ['techno', 'reggaeton', 'cumbia', 'apagada'];
+export const RADIOS = ['techno', 'reggaeton', 'cumbia', 'salsa', 'rock', 'apagada'];
 export const nombreRadio = (r) => ESTACIONES[r]?.nombre || 'Apagada';
 
 let musica = null;
