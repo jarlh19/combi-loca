@@ -22,7 +22,7 @@ Además, un chofer automático juega 20 partidas de 3 minutos sin chocar.
 
 ## El ranking
 
-Corre en Cloudflare Pages Functions con D1. Al arrancar, el juego pide una ficha firmada (HMAC) y la manda con el puntaje. El servidor rechaza fichas falsas o repetidas, partidas que dicen durar más de lo que pasó de verdad, puntajes que el juego no puede dar y nombres con groserías. También limita los envíos por IP, que se guarda solo como hash. Lo que no puede frenar es a alguien que juegue con un bot: para un ranking de evento es suficiente.
+Corre en Cloudflare Pages Functions con D1. Al arrancar, el juego pide una ficha firmada (HMAC) y la manda con el puntaje. El servidor rechaza fichas falsas o repetidas, partidas que dicen durar más de lo que pasó de verdad, puntajes que el juego no puede dar y nombres con groserías. También limita los envíos por IP, que se guarda como HMAC con el mismo secreto de las fichas (un hash simple de una IPv4 se revierte probándolas todas) y se borra pasado el minuto del límite. Lo que no puede frenar es a alguien que juegue con un bot: para un ranking de evento es suficiente.
 
 ## Correrlo en local
 
