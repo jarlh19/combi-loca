@@ -1,0 +1,4 @@
+# Valores de prueba, no secretos: la firma de fichas y la huella de la IP se
+# prueban con una clave inventada que solo existe en los archivos de pruebas.
+2fb9b1341752cf08c1ba2e867259a68e6085013b:test/ranking.test.mjs:generic-api-key:5
+19c7ac3a2476f96fc91fd3f18b15d2f902ec3127:test/puntajes.test.mjs:generic-api-key:8
