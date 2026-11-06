@@ -12,7 +12,7 @@
     "deploy": "wrangler pages deploy"
   },
   "devDependencies": {
-    "wrangler": "4.136.0"
+    "wrangler": "4.156.2"
   },
   "license": "MIT"
 }
