@@ -1,6 +1,6 @@
 // GET /api/puntajes  → el top, con el mejor puntaje de cada nombre
 // POST /api/puntajes → guarda el puntaje de una partida (una sola vez por ficha)
-import { json, sha256 } from "../../lib/util.js";
+import { json, huella } from "../../lib/util.js";
 import { leerFicha, nombreLimpio, revisarPuntaje } from "../../lib/ranking.js";
 
 const TOP = 20;
@@ -38,10 +38,14 @@ export async function onRequestPost({ request, env }){
     const problema = revisarPuntaje(datos, ficha.inicio, ahora);
     if (problema) return json({ error: problema }, 400);
 
-    const ip = await sha256("combi:" + (request.headers.get("CF-Connecting-IP") || ""));
+    // La IP solo sirve para el límite por minuto: se guarda con el mismo
+    // secreto de las fichas (el prefijo "ip:" la separa de sus firmas) y se
+    // borra pasado el minuto.
+    const ip = await huella("ip:" + (request.headers.get("CF-Connecting-IP") || ""), env.RUN_SECRET);
     const reciente = await env.DB.prepare("SELECT COUNT(*) AS n FROM puntajes WHERE ip = ? AND creado > ?")
       .bind(ip, ahora - 60_000).first();
     if (reciente && reciente.n >= POR_MINUTO) return json({ error: "demasiados" }, 429);
+    await env.DB.prepare("UPDATE puntajes SET ip = '' WHERE ip <> '' AND creado < ?").bind(ahora - 60_000).run();
 
     const r = await env.DB.prepare(
       `INSERT INTO puntajes (partida, nombre, clave, puntaje, pasajeros, duracion, ip, creado)

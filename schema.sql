@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS puntajes (
   puntaje   INTEGER NOT NULL,       -- céntimos recaudados
   pasajeros INTEGER NOT NULL,
   duracion  INTEGER NOT NULL,       -- milisegundos de juego
-  ip        TEXT NOT NULL,          -- hash de la IP, solo para limitar abusos
+  ip        TEXT NOT NULL,          -- HMAC de la IP con RUN_SECRET, solo para el límite por minuto; '' pasado el minuto
   creado    INTEGER NOT NULL        -- milisegundos
 );
 CREATE INDEX IF NOT EXISTS puntajes_puntaje ON puntajes (puntaje DESC);
