@@ -16,3 +16,14 @@ updates:
     groups:
       menores-y-parches:
         update-types: ["minor", "patch"]
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "08:00"
+      timezone: "America/Lima"
+    open-pull-requests-limit: 5
+    groups:
+      menores-y-parches:
+        update-types: ["minor", "patch"]
